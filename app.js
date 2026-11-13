@@ -20,22 +20,24 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 // ==========================================
-// 1. PASTE YOUR FIREBASE CONFIG HERE
+// 1. LOAD FIREBASE CONFIG FROM firebase.txt
 // ==========================================
-const firebaseConfig = {
-    apiKey: "AIzaSyDf8N77GLM53518B3hBJh3sUAI8_UHfla0",
-  authDomain: "flashcards-b7b51.firebaseapp.com",
-  databaseURL: "https://flashcards-b7b51-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "flashcards-b7b51",
-  storageBucket: "flashcards-b7b51.firebasestorage.app",
-  messagingSenderId: "202751219372",
-  appId: "1:202751219372:web:b6c8a793afc9b71c6df109",
-  measurementId: "G-W62823E94D"
-};
+async function loadFirebaseConfig() {
+  const res = await fetch("./firebase.txt");
+  if (!res.ok) {
+    throw new Error("Could not load firebase.txt. Make sure firebase.txt is uploaded in the same folder.");
+  }
+  const text = await res.text();
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) {
+    throw new Error("Invalid format in firebase.txt. Could not find { ... } config block.");
+  }
+  // Safely evaluate JS object literal or JSON from firebase.txt
+  return new Function(`return (${match[0]});`)();
+}
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+let auth;
+let db;
 const provider = new GoogleAuthProvider();
 
 // ==========================================
@@ -103,35 +105,7 @@ function formatSentence(sentence, reveal = false) {
 }
 
 // ==========================================
-// 4. AUTHENTICATION FLOW
-// ==========================================
-document.getElementById("google-signin-btn").addEventListener("click", async () => {
-  try {
-    await signInWithPopup(auth, provider);
-  } catch (err) {
-    document.getElementById("auth-error").textContent = err.message;
-  }
-});
-
-document.getElementById("signout-btn").addEventListener("click", () => signOut(auth));
-
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    currentUser = user;
-    document.getElementById("user-email").textContent = user.email;
-    document.getElementById("auth-screen").classList.add("hidden");
-    document.getElementById("app-container").classList.remove("hidden");
-    await Promise.all([loadCards(), loadPracticeLogs()]);
-    updateStats();
-  } else {
-    currentUser = null;
-    document.getElementById("auth-screen").classList.remove("hidden");
-    document.getElementById("app-container").classList.add("hidden");
-  }
-});
-
-// ==========================================
-// 5. FIRESTORE DATA & PRACTICE LOGS
+// 4. FIRESTORE DATA & PRACTICE LOGS
 // ==========================================
 function userCardsRef() {
   return collection(db, "users", currentUser.uid, "vocab_cards");
@@ -144,15 +118,12 @@ function practiceLogsRef() {
 async function loadCards() {
   const snapshot = await getDocs(userCardsRef());
   allCards = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-  // Also mark any dateAdded from imported cards as completed days
-  allCards.forEach((c) => {
-    if (c.dateAdded) completedDates.add(c.dateAdded);
-  });
   buildStudyQueue(false);
   renderWordBank();
 }
 
 async function loadPracticeLogs() {
+  completedDates.clear();
   const snapshot = await getDocs(practiceLogsRef());
   snapshot.docs.forEach((d) => completedDates.add(d.id));
 }
@@ -176,7 +147,6 @@ function calculateStreaks() {
   const sorted = Array.from(completedDates).sort();
   if (sorted.length === 0) return { current: 0, best: 0 };
 
-  // Best streak across all logged dates
   let best = 1;
   let running = 1;
   for (let i = 1; i < sorted.length; i++) {
@@ -191,7 +161,6 @@ function calculateStreaks() {
     }
   }
 
-  // Current active streak (includes today or yesterday)
   let current = 0;
   const checkDate = new Date();
   const todayStr = getLocalISO(checkDate);
@@ -220,7 +189,7 @@ function updateStats() {
 }
 
 // ==========================================
-// 6. CALENDAR MODAL RENDERER
+// 5. CALENDAR MODAL RENDERER
 // ==========================================
 const calendarModal = document.getElementById("calendar-modal");
 
@@ -287,7 +256,7 @@ document.getElementById("next-month-btn").addEventListener("click", () => {
 });
 
 // ==========================================
-// 7. SPACED REPETITION ENGINE
+// 6. SPACED REPETITION ENGINE
 // ==========================================
 function buildStudyQueue(practiceAll = false) {
   const today = getLocalISO();
@@ -405,7 +374,7 @@ document.getElementById("practice-all-btn").addEventListener("click", () => {
 });
 
 // ==========================================
-// 8. IMPORT MODAL & BACKUP
+// 7. IMPORT MODAL & BACKUP
 // ==========================================
 const modal = document.getElementById("import-modal");
 const jsonInput = document.getElementById("json-input");
@@ -433,12 +402,10 @@ document.getElementById("save-json-btn").addEventListener("click", async () => {
 
     const batch = writeBatch(db);
     const today = getLocalISO();
-    const importedDates = new Set();
 
     items.forEach((item) => {
       if (!item.word || !item.sentence || !item.meaning) return;
       const dateAdded = item.dateAdded || today;
-      importedDates.add(dateAdded);
       const id = slugify(dateAdded, item.word);
       const ref = doc(db, "users", currentUser.uid, "vocab_cards", id);
 
@@ -459,11 +426,9 @@ document.getElementById("save-json-btn").addEventListener("click", async () => {
       );
     });
 
-    importedDates.forEach((dStr) => {
-      const logRef = doc(db, "users", currentUser.uid, "practice_logs", dStr);
-      batch.set(logRef, { date: dStr, updatedAt: serverTimestamp() }, { merge: true });
-      completedDates.add(dStr);
-    });
+    const logRef = doc(db, "users", currentUser.uid, "practice_logs", today);
+    batch.set(logRef, { date: today, updatedAt: serverTimestamp() }, { merge: true });
+    completedDates.add(today);
 
     await batch.commit();
     importStatus.style.color = "#10b981";
@@ -489,7 +454,7 @@ document.getElementById("export-backup-btn").addEventListener("click", () => {
 });
 
 // ==========================================
-// 9. WORD BANK & NAVIGATION TABS
+// 8. WORD BANK & NAVIGATION TABS
 // ==========================================
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -542,3 +507,44 @@ function renderWordBank() {
 
 document.getElementById("search-input").addEventListener("input", renderWordBank);
 document.getElementById("box-filter").addEventListener("change", renderWordBank);
+
+// ==========================================
+// 9. BOOTSTRAP APP
+// ==========================================
+async function init() {
+  try {
+    const firebaseConfig = await loadFirebaseConfig();
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+
+    document.getElementById("google-signin-btn").addEventListener("click", async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (err) {
+        document.getElementById("auth-error").textContent = err.message;
+      }
+    });
+
+    document.getElementById("signout-btn").addEventListener("click", () => signOut(auth));
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById("user-email").textContent = user.email;
+        document.getElementById("auth-screen").classList.add("hidden");
+        document.getElementById("app-container").classList.remove("hidden");
+        await Promise.all([loadCards(), loadPracticeLogs()]);
+        updateStats();
+      } else {
+        currentUser = null;
+        document.getElementById("auth-screen").classList.remove("hidden");
+        document.getElementById("app-container").classList.add("hidden");
+      }
+    });
+  } catch (err) {
+    document.getElementById("auth-error").textContent = err.message;
+  }
+}
+
+init();

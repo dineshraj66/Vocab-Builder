@@ -1,0 +1,10 @@
+  const firebaseConfig = {
+  apiKey: "AIzaSyDf8N77GLM53518B3hBJh3sUAI8_UHfla0",
+  authDomain: "flashcards-b7b51.firebaseapp.com",
+  databaseURL: "https://flashcards-b7b51-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "flashcards-b7b51",
+  storageBucket: "flashcards-b7b51.firebasestorage.app",
+  messagingSenderId: "202751219372",
+  appId: "1:202751219372:web:b6c8a793afc9b71c6df109",
+  measurementId: "G-W62823E94D"
+};
