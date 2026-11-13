@@ -93,6 +93,14 @@ body {
 .top-actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.calendar-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-color: var(--warning);
 }
 
 /* Buttons */
@@ -180,6 +188,7 @@ body {
 
 .stat-value.accent { color: var(--primary); }
 .stat-value.success { color: var(--success); }
+.stat-value.warning { color: var(--warning); }
 
 /* Tabs */
 .tabs {
@@ -418,7 +427,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
 }
 
 .modal-subtitle {
@@ -456,4 +465,86 @@ textarea {
   color: var(--danger);
   font-size: 0.85rem;
   margin-top: 10px;
+}
+
+/* Calendar Modal */
+.calendar-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.cal-pill {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+
+.cal-pill span {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.cal-pill strong {
+  font-size: 1.15rem;
+  color: var(--success);
+}
+
+.calendar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cal-day {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-height: 52px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.cal-day.empty {
+  background: transparent;
+  border-color: transparent;
+}
+
+.cal-day.today {
+  border-color: var(--primary);
+}
+
+.cal-day.completed {
+  background: rgba(16, 185, 129, 0.16);
+  border-color: var(--success);
+}
+
+.cal-tick {
+  color: var(--success);
+  font-weight: 800;
+  font-size: 0.95rem;
 }

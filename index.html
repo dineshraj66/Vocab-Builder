@@ -70,4 +70,125 @@
 
       <div id="flashcard-wrapper" class="flashcard-wrapper hidden">
         <div class="card-meta">
-          <span id="card-source"
+          <span id="card-source" class="meta-tag">Chennai Times</span>
+          <span id="card-box" class="meta-tag box-tag">Box 1</span>
+          <span id="card-progress" class="meta-tag">1 / 10</span>
+        </div>
+
+        <div class="flashcard">
+          <div id="card-sentence" class="sentence-display"></div>
+
+          <div id="hint-section" class="hint-section hidden">
+            <strong>Hint:</strong> <span id="card-hint-text"></span>
+          </div>
+
+          <div id="answer-section" class="answer-section hidden">
+            <div class="word-header">
+              <h2 id="card-word"></h2>
+              <button id="speak-btn" class="btn-icon" title="Listen">🔊</button>
+            </div>
+            <p id="card-meaning" class="meaning-text"></p>
+          </div>
+        </div>
+
+        <!-- Controls Before Reveal -->
+        <div id="pre-reveal-controls" class="controls-row">
+          <button id="show-hint-btn" class="btn btn-secondary">Show Hint</button>
+          <button id="reveal-btn" class="btn btn-primary btn-large">Show Answer</button>
+        </div>
+
+        <!-- Spaced Repetition Rating Controls -->
+        <div id="rating-controls" class="rating-grid hidden">
+          <button class="btn-rate rate-again" data-rate="again">
+            <span>Again</span>
+            <small>1 day (Box 1)</small>
+          </button>
+          <button class="btn-rate rate-hard" data-rate="hard">
+            <span>Hard</span>
+            <small>2 days</small>
+          </button>
+          <button class="btn-rate rate-good" data-rate="good">
+            <span>Good</span>
+            <small id="good-interval-label">3 days</small>
+          </button>
+          <button class="btn-rate rate-easy" data-rate="easy">
+            <span>Easy</span>
+            <small id="easy-interval-label">7 days</small>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Tab 2: Word Bank -->
+    <section id="bank-tab" class="tab-content hidden">
+      <div class="bank-controls">
+        <input type="text" id="search-input" placeholder="Search word, sentence, or meaning..." />
+        <select id="box-filter">
+          <option value="all">All Boxes</option>
+          <option value="1">Box 1 (New / Hard)</option>
+          <option value="2">Box 2 (3d)</option>
+          <option value="3">Box 3 (7d)</option>
+          <option value="4">Box 4 (15d)</option>
+          <option value="5">Box 5 (Mastered)</option>
+        </select>
+      </div>
+      <div id="word-list" class="word-list"></div>
+    </section>
+  </div>
+
+  <!-- Import JSON Modal -->
+  <div id="import-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Import Daily Sentences (JSON)</h3>
+        <button id="close-import-btn" class="btn-icon">✕</button>
+      </div>
+      <p class="modal-subtitle">Paste the JSON array generated from your daily notebook photo.</p>
+      <textarea id="json-input" rows="10" placeholder='[{"word": "example", "meaning": "...", "sentence": "This is an [example].", "source": "Chennai Times", "dateAdded": "2026-11-13"}]'></textarea>
+      <div class="modal-footer">
+        <button id="load-starter-btn" class="btn btn-secondary">Load Nov 12 & 13 Starter Pack</button>
+        <button id="save-json-btn" class="btn btn-primary">Save to Database</button>
+      </div>
+      <p id="import-status" class="status-text"></p>
+    </div>
+  </div>
+
+  <!-- Calendar & Streak Modal -->
+  <div id="calendar-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Practice Calendar & Streak</h3>
+        <button id="close-calendar-btn" class="btn-icon">✕</button>
+      </div>
+
+      <div class="calendar-summary">
+        <div class="cal-pill">
+          <span>Current Streak</span>
+          <strong id="cal-current-streak">0 days</strong>
+        </div>
+        <div class="cal-pill">
+          <span>Best Streak</span>
+          <strong id="cal-best-streak">0 days</strong>
+        </div>
+        <div class="cal-pill">
+          <span>Active Days</span>
+          <strong id="cal-total-days">0 days</strong>
+        </div>
+      </div>
+
+      <div class="calendar-nav">
+        <button id="prev-month-btn" class="btn btn-secondary">◀</button>
+        <h4 id="calendar-month-label">November 2026</h4>
+        <button id="next-month-btn" class="btn btn-secondary">▶</button>
+      </div>
+
+      <div class="calendar-weekdays">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+      </div>
+      <div id="calendar-grid" class="calendar-grid"></div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

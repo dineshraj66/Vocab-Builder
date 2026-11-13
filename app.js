@@ -11,9 +11,11 @@ import {
   collection,
   doc,
   getDocs,
+  setDoc,
   updateDoc,
   deleteDoc,
   writeBatch,
+  increment,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
@@ -21,7 +23,7 @@ import {
 // 1. PASTE YOUR FIREBASE CONFIG HERE
 // ==========================================
 const firebaseConfig = {
- apiKey: "AIzaSyDf8N77GLM53518B3hBJh3sUAI8_UHfla0",
+    apiKey: "AIzaSyDf8N77GLM53518B3hBJh3sUAI8_UHfla0",
   authDomain: "flashcards-b7b51.firebaseapp.com",
   databaseURL: "https://flashcards-b7b51-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "flashcards-b7b51",
@@ -70,17 +72,22 @@ let currentUser = null;
 let allCards = [];
 let studyQueue = [];
 let currentIndex = 0;
+let completedDates = new Set();
+let viewDate = new Date();
 
 const BOX_INTERVALS = { 1: 1, 2: 3, 3: 7, 4: 15, 5: 30 };
 
-function getTodayISO() {
-  return new Date().toISOString().split("T")[0];
+function getLocalISO(dateObj = new Date()) {
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const d = String(dateObj.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function addDaysISO(days) {
   const d = new Date();
   d.setDate(d.getDate() + days);
-  return d.toISOString().split("T")[0];
+  return getLocalISO(d);
 }
 
 function slugify(dateStr, word) {
@@ -114,7 +121,8 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("user-email").textContent = user.email;
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("app-container").classList.remove("hidden");
-    await loadCards();
+    await Promise.all([loadCards(), loadPracticeLogs()]);
+    updateStats();
   } else {
     currentUser = null;
     document.getElementById("auth-screen").classList.remove("hidden");
@@ -123,37 +131,166 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // ==========================================
-// 5. FIRESTORE DATA OPERATIONS
+// 5. FIRESTORE DATA & PRACTICE LOGS
 // ==========================================
 function userCardsRef() {
   return collection(db, "users", currentUser.uid, "vocab_cards");
 }
 
+function practiceLogsRef() {
+  return collection(db, "users", currentUser.uid, "practice_logs");
+}
+
 async function loadCards() {
   const snapshot = await getDocs(userCardsRef());
   allCards = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-  updateStats();
+  // Also mark any dateAdded from imported cards as completed days
+  allCards.forEach((c) => {
+    if (c.dateAdded) completedDates.add(c.dateAdded);
+  });
   buildStudyQueue(false);
   renderWordBank();
 }
 
+async function loadPracticeLogs() {
+  const snapshot = await getDocs(practiceLogsRef());
+  snapshot.docs.forEach((d) => completedDates.add(d.id));
+}
+
+async function markDayCompleted(dateStr = getLocalISO()) {
+  completedDates.add(dateStr);
+  const logDocRef = doc(db, "users", currentUser.uid, "practice_logs", dateStr);
+  await setDoc(
+    logDocRef,
+    {
+      date: dateStr,
+      reviews: increment(1),
+      updatedAt: serverTimestamp()
+    },
+    { merge: true }
+  );
+  updateStats();
+}
+
+function calculateStreaks() {
+  const sorted = Array.from(completedDates).sort();
+  if (sorted.length === 0) return { current: 0, best: 0 };
+
+  // Best streak across all logged dates
+  let best = 1;
+  let running = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = new Date(sorted[i - 1] + "T00:00:00");
+    const curr = new Date(sorted[i] + "T00:00:00");
+    const diffDays = Math.round((curr - prev) / 86400000);
+    if (diffDays === 1) {
+      running++;
+      if (running > best) best = running;
+    } else if (diffDays > 1) {
+      running = 1;
+    }
+  }
+
+  // Current active streak (includes today or yesterday)
+  let current = 0;
+  const checkDate = new Date();
+  const todayStr = getLocalISO(checkDate);
+  if (!completedDates.has(todayStr)) {
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+  while (completedDates.has(getLocalISO(checkDate))) {
+    current++;
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  return { current, best };
+}
+
 function updateStats() {
-  const today = getTodayISO();
+  const today = getLocalISO();
   const dueCount = allCards.filter((c) => (c.nextReview || today) <= today).length;
   const masteredCount = allCards.filter((c) => (c.box || 1) >= 4).length;
-  const uniqueDays = new Set(allCards.map((c) => c.dateAdded)).size;
+  const streaks = calculateStreaks();
 
   document.getElementById("stat-due").textContent = dueCount;
   document.getElementById("stat-total").textContent = allCards.length;
   document.getElementById("stat-mastered").textContent = masteredCount;
-  document.getElementById("stat-days").textContent = uniqueDays;
+  document.getElementById("stat-streak").textContent = `${streaks.current}d`;
+  document.getElementById("header-streak").textContent = streaks.current;
 }
 
 // ==========================================
-// 6. SPACED REPETITION ENGINE
+// 6. CALENDAR MODAL RENDERER
+// ==========================================
+const calendarModal = document.getElementById("calendar-modal");
+
+function renderCalendar() {
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const todayStr = getLocalISO();
+
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  document.getElementById("calendar-month-label").textContent = `${monthNames[month]} ${year}`;
+
+  const streaks = calculateStreaks();
+  document.getElementById("cal-current-streak").textContent = `${streaks.current} days`;
+  document.getElementById("cal-best-streak").textContent = `${streaks.best} days`;
+  document.getElementById("cal-total-days").textContent = `${completedDates.size} days`;
+
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const gridEl = document.getElementById("calendar-grid");
+  gridEl.innerHTML = "";
+
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    const emptyCell = document.createElement("div");
+    emptyCell.className = "cal-day empty";
+    gridEl.appendChild(emptyCell);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const isDone = completedDates.has(dateStr);
+    const isToday = dateStr === todayStr;
+
+    const cell = document.createElement("div");
+    cell.className = `cal-day${isDone ? " completed" : ""}${isToday ? " today" : ""}`;
+    cell.innerHTML = `
+      <span>${day}</span>
+      <span class="cal-tick">${isDone ? "✓" : ""}</span>
+    `;
+    gridEl.appendChild(cell);
+  }
+}
+
+document.getElementById("open-calendar-btn").addEventListener("click", () => {
+  viewDate = new Date();
+  renderCalendar();
+  calendarModal.classList.remove("hidden");
+});
+
+document.getElementById("close-calendar-btn").addEventListener("click", () => {
+  calendarModal.classList.add("hidden");
+});
+
+document.getElementById("prev-month-btn").addEventListener("click", () => {
+  viewDate.setMonth(viewDate.getMonth() - 1);
+  renderCalendar();
+});
+
+document.getElementById("next-month-btn").addEventListener("click", () => {
+  viewDate.setMonth(viewDate.getMonth() + 1);
+  renderCalendar();
+});
+
+// ==========================================
+// 7. SPACED REPETITION ENGINE
 // ==========================================
 function buildStudyQueue(practiceAll = false) {
-  const today = getTodayISO();
+  const today = getLocalISO();
   const filtered = practiceAll
     ? [...allCards]
     : allCards.filter((c) => (c.nextReview || today) <= today);
@@ -188,13 +325,11 @@ function renderCurrentCard() {
   document.getElementById("card-word").textContent = card.word;
   document.getElementById("card-meaning").textContent = card.meaning;
 
-  // Dynamic interval previews
   const goodBox = Math.min(5, box + 1);
   const easyBox = Math.min(5, box + 2);
   document.getElementById("good-interval-label").textContent = `${BOX_INTERVALS[goodBox]} days (Box ${goodBox})`;
   document.getElementById("easy-interval-label").textContent = `${BOX_INTERVALS[easyBox]} days (Box ${easyBox})`;
 
-  // Reset visibility
   document.getElementById("hint-section").classList.add("hidden");
   document.getElementById("answer-section").classList.add("hidden");
   document.getElementById("pre-reveal-controls").classList.remove("hidden");
@@ -243,6 +378,7 @@ document.querySelectorAll(".btn-rate").forEach((btn) => {
       daysToAdd = BOX_INTERVALS[newBox];
     }
 
+    const todayStr = getLocalISO();
     const nextReview = addDaysISO(daysToAdd);
     const cardDocRef = doc(db, "users", currentUser.uid, "vocab_cards", card.id);
 
@@ -250,12 +386,13 @@ document.querySelectorAll(".btn-rate").forEach((btn) => {
       box: newBox,
       nextReview: nextReview,
       reviewCount: (card.reviewCount || 0) + 1,
-      lastReviewed: getTodayISO()
+      lastReviewed: todayStr
     });
 
-    // Update local state
     card.box = newBox;
     card.nextReview = nextReview;
+
+    await markDayCompleted(todayStr);
 
     currentIndex++;
     updateStats();
@@ -268,7 +405,7 @@ document.getElementById("practice-all-btn").addEventListener("click", () => {
 });
 
 // ==========================================
-// 7. IMPORT MODAL & BACKUP
+// 8. IMPORT MODAL & BACKUP
 // ==========================================
 const modal = document.getElementById("import-modal");
 const jsonInput = document.getElementById("json-input");
@@ -295,11 +432,13 @@ document.getElementById("save-json-btn").addEventListener("click", async () => {
     }
 
     const batch = writeBatch(db);
-    const today = getTodayISO();
+    const today = getLocalISO();
+    const importedDates = new Set();
 
     items.forEach((item) => {
       if (!item.word || !item.sentence || !item.meaning) return;
       const dateAdded = item.dateAdded || today;
+      importedDates.add(dateAdded);
       const id = slugify(dateAdded, item.word);
       const ref = doc(db, "users", currentUser.uid, "vocab_cards", id);
 
@@ -320,10 +459,18 @@ document.getElementById("save-json-btn").addEventListener("click", async () => {
       );
     });
 
+    importedDates.forEach((dStr) => {
+      const logRef = doc(db, "users", currentUser.uid, "practice_logs", dStr);
+      batch.set(logRef, { date: dStr, updatedAt: serverTimestamp() }, { merge: true });
+      completedDates.add(dStr);
+    });
+
     await batch.commit();
+    importStatus.style.color = "#10b981";
     importStatus.textContent = `Saved ${items.length} words successfully!`;
     jsonInput.value = "";
     await loadCards();
+    updateStats();
     setTimeout(() => modal.classList.add("hidden"), 900);
   } catch (err) {
     importStatus.style.color = "#ef4444";
@@ -335,14 +482,14 @@ document.getElementById("export-backup-btn").addEventListener("click", () => {
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allCards, null, 2));
   const dlAnchor = document.createElement("a");
   dlAnchor.setAttribute("href", dataStr);
-  dlAnchor.setAttribute("download", `vocab-backup-${getTodayISO()}.json`);
+  dlAnchor.setAttribute("download", `vocab-backup-${getLocalISO()}.json`);
   document.body.appendChild(dlAnchor);
   dlAnchor.click();
   dlAnchor.remove();
 });
 
 // ==========================================
-// 8. WORD BANK & NAVIGATION TABS
+// 9. WORD BANK & NAVIGATION TABS
 // ==========================================
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -387,6 +534,7 @@ function renderWordBank() {
       if (confirm("Delete this word from your database?")) {
         await deleteDoc(doc(db, "users", currentUser.uid, "vocab_cards", btn.dataset.id));
         await loadCards();
+        updateStats();
       }
     });
   });
