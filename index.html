@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Vocab Trainer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Auth Overlay -->
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+      <h1>Daily Vocab Trainer</h1>
+      <p>365-Day Newspaper Sentence & Spaced Repetition System</p>
+      <button id="google-signin-btn" class="btn btn-primary">Sign in with Google</button>
+      <p id="auth-error" class="error-text"></p>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app-container" class="app-container hidden">
+    <header class="topbar">
+      <div class="brand">
+        <h2>Vocab Trainer</h2>
+        <span id="user-email" class="badge"></span>
+      </div>
+      <div class="top-actions">
+        <button id="open-import-btn" class="btn btn-primary">+ Import JSON</button>
+        <button id="export-backup-btn" class="btn btn-secondary">Backup</button>
+        <button id="signout-btn" class="btn btn-ghost">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Due Today</span>
+        <strong id="stat-due" class="stat-value accent">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Total Words</span>
+        <strong id="stat-total" class="stat-value">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Mastered (Box 4+)</span>
+        <strong id="stat-mastered" class="stat-value success">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Days Logged</span>
+        <strong id="stat-days" class="stat-value">0</strong>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="study-tab">Study Queue</button>
+      <button class="tab-btn" data-tab="bank-tab">Word Bank</button>
+    </nav>
+
+    <!-- Tab 1: Study Queue -->
+    <main id="study-tab" class="tab-content active">
+      <div id="empty-queue" class="empty-state hidden">
+        <h3>All caught up for today!</h3>
+        <p>You have reviewed every card due today. Import tomorrow's sentences or browse your Word Bank.</p>
+        <button id="practice-all-btn" class="btn btn-secondary">Practice Ahead (Extra Review)</button>
+      </div>
+
+      <div id="flashcard-wrapper" class="flashcard-wrapper hidden">
+        <div class="card-meta">
+          <span id="card-source" class="meta-tag">Chennai Times</span>
+          <span id="card-box" class="meta-tag box-tag">Box 1</span>
+          <span id="card-progress" class="meta-tag">1 / 10</span>
+        </div>
+
+        <div class="flashcard">
+          <div id="card-sentence" class="sentence-display"></div>
+
+          <div id="hint-section" class="hint-section hidden">
+            <strong>Hint:</strong> <span id="card-hint-text"></span>
+          </div>
+
+          <div id="answer-section" class="answer-section hidden">
+            <div class="word-header">
+              <h2 id="card-word"></h2>
+              <button id="speak-btn" class="btn-icon" title="Listen">🔊</button>
+            </div>
+            <p id="card-meaning" class="meaning-text"></p>
+          </div>
+        </div>
+
+        <!-- Controls Before Reveal -->
+        <div id="pre-reveal-controls" class="controls-row">
+          <button id="show-hint-btn" class="btn btn-secondary">Show Hint</button>
+          <button id="reveal-btn" class="btn btn-primary btn-large">Show Answer</button>
+        </div>
+
+        <!-- Spaced Repetition Rating Controls -->
+        <div id="rating-controls" class="rating-grid hidden">
+          <button class="btn-rate rate-again" data-rate="again">
+            <span>Again</span>
+            <small>1 day (Box 1)</small>
+          </button>
+          <button class="btn-rate rate-hard" data-rate="hard">
+            <span>Hard</span>
+            <small>2 days</small>
+          </button>
+          <button class="btn-rate rate-good" data-rate="good">
+            <span>Good</span>
+            <small id="good-interval-label">3 days</small>
+          </button>
+          <button class="btn-rate rate-easy" data-rate="easy">
+            <span>Easy</span>
+            <small id="easy-interval-label">7 days</small>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Tab 2: Word Bank -->
+    <section id="bank-tab" class="tab-content hidden">
+      <div class="bank-controls">
+        <input type="text" id="search-input" placeholder="Search word, sentence, or meaning..." />
+        <select id="box-filter">
+          <option value="all">All Boxes</option>
+          <option value="1">Box 1 (New / Hard)</option>
+          <option value="2">Box 2 (3d)</option>
+          <option value="3">Box 3 (7d)</option>
+          <option value="4">Box 4 (15d)</option>
+          <option value="5">Box 5 (Mastered)</option>
+        </select>
+      </div>
+      <div id="word-list" class="word-list"></div>
+    </section>
+  </div>
+
+  <!-- Import JSON Modal -->
+  <div id="import-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Import Daily Sentences (JSON)</h3>
+        <button id="close-import-btn" class="btn-icon">✕</button>
+      </div>
+      <p class="modal-subtitle">Paste the JSON array generated from your daily notebook photo.</p>
+      <textarea id="json-input" rows="10" placeholder='[{"word": "example", "meaning": "...", "sentence": "This is an [example].", "source": "Chennai Times", "dateAdded": "2026-11-13"}]'></textarea>
+      <div class="modal-footer">
+        <button id="load-starter-btn" class="btn btn-secondary">Load Nov 12 & 13 Starter Pack</button>
+        <button id="save-json-btn" class="btn btn-primary">Save to Database</button>
+      </div>
+      <p id="import-status" class="status-text"></p>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
