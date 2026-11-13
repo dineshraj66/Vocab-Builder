@@ -1,0 +1,18 @@
+{
+  "name": "Daily Vocab Trainer",
+  "short_name": "VocabTrainer",
+  "description": "365-Day Newspaper Sentence & Spaced Repetition System",
+  "start_url": "/Vocab-Builder/",
+  "scope": "/Vocab-Builder/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3330/3330314.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
