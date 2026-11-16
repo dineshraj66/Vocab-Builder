@@ -1,4 +1,4 @@
-const CACHE_NAME = "vocab-trainer-v3";
+const CACHE_NAME = "vocab-trainer-v4";
 const ASSETS = [
   "/Vocab-Builder/",
   "/Vocab-Builder/index.html",

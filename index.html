@@ -6,7 +6,7 @@
   <title>Daily Vocab Trainer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#090d16" />
@@ -29,7 +29,9 @@
     </div>
   </div>
 
-  <!-- Main App -->
+  <!-- ==========================================
+       ADULT / MAIN APP VIEW
+       ========================================== -->
   <div id="app-container" class="app-container hidden">
     <header class="topbar">
       <div class="brand">
@@ -40,6 +42,7 @@
         </div>
       </div>
       <div class="top-actions">
+        <button id="enter-kid-mode-btn" class="btn btn-kid-launch" title="Switch to Kid Mode">🚀 Kid Mode</button>
         <button id="open-calendar-btn" class="btn btn-glass calendar-trigger" title="Practice Calendar & Streak">
           <span class="flame-icon">🔥</span> <span id="header-streak">0</span>
         </button>
@@ -184,7 +187,6 @@
 
     <!-- Tab 2: Arcade -->
     <section id="arcade-tab" class="tab-content hidden">
-      <!-- Arcade Launcher -->
       <div id="arcade-menu">
         <div class="arcade-toolbar glass-panel">
           <div>
@@ -282,6 +284,116 @@
         </select>
       </div>
       <div id="word-list" class="word-list"></div>
+    </section>
+  </div>
+
+  <!-- ==========================================
+       KID MODE VIEW (7-YEAR-OLD STORY EXPLORER)
+       ========================================== -->
+  <div id="kid-container" class="kid-container hidden">
+    <canvas id="kid-confetti-canvas" class="confetti-canvas"></canvas>
+
+    <!-- Kid Top Header -->
+    <header class="kid-topbar">
+      <button id="exit-kid-mode-btn" class="kid-btn kid-exit-btn">← Exit Kid Mode</button>
+
+      <div class="kid-level-pill">
+        <span class="kid-crown">👑</span>
+        <div>
+          <strong id="kid-level-label">Level 0</strong>
+          <div class="kid-level-bar-track">
+            <div id="kid-level-bar-fill" class="kid-level-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kid-corner-stats">
+        <div class="kid-stat-badge kid-points-badge" title="2 Points per Mastered Word">
+          <span>⭐ Points</span>
+          <strong id="kid-points">0</strong>
+        </div>
+        <div class="kid-stat-badge kid-mastered-badge" title="Words answered 5 times in a row">
+          <span>🏆 Mastered</span>
+          <strong id="kid-mastered">0</strong>
+        </div>
+      </div>
+    </header>
+
+    <!-- Kid Home Hub (3 Games + Active Word Stars) -->
+    <main id="kid-hub" class="kid-hub">
+      <div class="kid-hero-banner">
+        <h1>Story Word Adventure! 📚✨</h1>
+        <p>Get <strong>5 stars in a row</strong> on any word to master it (+2 Points) and unlock new book words!</p>
+      </div>
+
+      <div class="kid-games-grid">
+        <button id="kid-start-g1" class="kid-game-card kid-card-1">
+          <div class="kid-game-icon">🔄</div>
+          <h3>Word Twins &amp; Opposites</h3>
+          <p>Pick the Synonym (Same) or Antonym (Opposite)!</p>
+          <span class="kid-play-pill">Play Game 1 ▶</span>
+        </button>
+
+        <button id="kid-start-g2" class="kid-game-card kid-card-2">
+          <div class="kid-game-icon">📖</div>
+          <h3>Story Sentence Fill</h3>
+          <p>Choose the right word to finish the story!</p>
+          <span class="kid-play-pill">Play Game 2 ▶</span>
+        </button>
+
+        <button id="kid-start-g3" class="kid-game-card kid-card-3">
+          <div class="kid-game-icon">🔤</div>
+          <h3>Missing Letter Quest</h3>
+          <p>Tap the missing letters to spell the word!</p>
+          <span class="kid-play-pill">Play Game 3 ▶</span>
+        </button>
+      </div>
+
+      <!-- Current Practice Words & 5-Star Progress -->
+      <section class="kid-pack-panel">
+        <div class="kid-pack-header">
+          <h3>Your Active Words (<span id="kid-active-count">0</span>)</h3>
+          <span class="kid-pack-sub">5 green stars = Mastered (+2 pts &amp; new word unlocked!)</span>
+        </div>
+        <div id="kid-active-words-grid" class="kid-words-chips"></div>
+      </section>
+    </main>
+
+    <!-- Kid Game Play Stage -->
+    <section id="kid-stage" class="kid-stage hidden">
+      <div class="kid-stage-top">
+        <button id="kid-back-hub-btn" class="kid-btn kid-back-btn">🏠 All Games</button>
+        <span id="kid-game-title-pill" class="kid-mode-tag">Game 1</span>
+        <div id="kid-word-stars" class="kid-word-stars" title="Consecutive correct answers">☆☆☆☆☆</div>
+      </div>
+
+      <div class="kid-question-card">
+        <div id="kid-prompt-badge" class="kid-prompt-badge">SYNONYM (SAME MEANING)</div>
+        <div class="kid-prompt-row">
+          <h2 id="kid-question-text" class="kid-question-text"></h2>
+          <button id="kid-speak-btn" class="kid-speak-btn" title="Hear it out loud">🔊</button>
+        </div>
+        <p id="kid-clue-text" class="kid-clue-text"></p>
+
+        <!-- Game 1 & 2 Multiple Choice Options -->
+        <div id="kid-mc-options" class="kid-options-grid"></div>
+
+        <!-- Game 3 Missing Letters Builder -->
+        <div id="kid-spell-area" class="kid-spell-area hidden">
+          <div id="kid-letter-slots" class="kid-letter-slots"></div>
+          <div id="kid-letter-choices" class="kid-letter-choices"></div>
+          <button id="kid-clear-letters-btn" class="kid-btn kid-clear-btn">↺ Reset Letters</button>
+        </div>
+      </div>
+
+      <!-- Reaction Overlay (Popper / Sad Emoji) -->
+      <div id="kid-feedback-banner" class="kid-feedback hidden">
+        <div id="kid-feedback-emoji" class="kid-feedback-emoji">🎉</div>
+        <div class="kid-feedback-copy">
+          <strong id="kid-feedback-title">Awesome!</strong>
+          <p id="kid-feedback-msg"></p>
+        </div>
+      </div>
     </section>
   </div>
 
