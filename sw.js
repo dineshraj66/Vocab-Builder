@@ -1,10 +1,10 @@
-const CACHE_NAME = "vocab-trainer-v4";
+const CACHE_NAME = "vocab-trainer-v6";
 const ASSETS = [
-  "/Vocab-Builder/",
-  "/Vocab-Builder/index.html",
-  "/Vocab-Builder/styles.css",
-  "/Vocab-Builder/app.js",
-  "/Vocab-Builder/manifest.json"
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./app.js",
+  "./manifest.json"
 ];
 
 self.addEventListener("install", (event) => {
@@ -25,7 +25,6 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Network-first strategy so updates to app.js/styles.css show up immediately
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(
