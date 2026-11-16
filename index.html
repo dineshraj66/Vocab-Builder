@@ -157,13 +157,11 @@
           </div>
         </div>
 
-        <!-- Controls Before Reveal -->
         <div id="pre-reveal-controls" class="controls-row">
           <button id="show-hint-btn" class="btn btn-glass">Show Hint</button>
           <button id="reveal-btn" class="btn btn-primary btn-glow btn-large">Show Answer</button>
         </div>
 
-        <!-- Spaced Repetition Rating Controls -->
         <div id="rating-controls" class="rating-grid hidden">
           <button class="btn-rate rate-again" data-rate="again">
             <span>Again</span>
@@ -222,7 +220,6 @@
         </div>
       </div>
 
-      <!-- Game 1: Headline Quiz Arena -->
       <div id="quiz-arena" class="glass-panel arena-box hidden">
         <div class="arena-header">
           <button class="btn btn-ghost btn-sm exit-arcade-btn">← Back</button>
@@ -241,7 +238,6 @@
         <div id="quiz-options" class="quiz-options-grid"></div>
       </div>
 
-      <!-- Game 2: Speed Match Arena -->
       <div id="match-arena" class="glass-panel arena-box hidden">
         <div class="arena-header">
           <button class="btn btn-ghost btn-sm exit-arcade-btn">← Back</button>
@@ -258,7 +254,6 @@
         </div>
       </div>
 
-      <!-- Arcade Summary Card -->
       <div id="arcade-result" class="empty-state glass-panel hidden">
         <div class="empty-badge" id="result-badge">ROUND COMPLETE</div>
         <h3 id="result-title">Great Run!</h3>
@@ -308,6 +303,7 @@
       </div>
 
       <div class="kid-corner-stats">
+        <button id="kid-sound-toggle-btn" class="kid-btn kid-sound-btn" title="Toggle Sound Effects">🔊</button>
         <div class="kid-stat-badge kid-points-badge" title="2 Points per Mastered Word">
           <span>⭐ Points</span>
           <strong id="kid-points">0</strong>
@@ -319,17 +315,38 @@
       </div>
     </header>
 
-    <!-- Kid Home Hub (3 Games + Active Word Stars) -->
+    <!-- Kid Home Hub -->
     <main id="kid-hub" class="kid-hub">
-      <div class="kid-hero-banner">
-        <h1>Story Word Adventure! 📚✨</h1>
-        <p>Get <strong>5 stars in a row</strong> on any word to master it (+2 Points) and unlock new book words!</p>
-      </div>
+      <!-- Companion Pet + Hero Banner -->
+      <section class="kid-pet-hero">
+        <button id="kid-pet-card" class="kid-pet-card" title="Tap your Word Pet!">
+          <div id="kid-pet-avatar" class="kid-pet-avatar">🥚</div>
+          <div class="kid-pet-info">
+            <span class="kid-pet-tag">YOUR WORD PET</span>
+            <strong id="kid-pet-name">Mystery Egg</strong>
+            <small id="kid-pet-next">Next hatch at 20 pts!</small>
+          </div>
+        </button>
 
+        <div class="kid-hero-banner">
+          <h1>Story Word Adventure! 📚✨</h1>
+          <p>Get <strong>5 stars in a row</strong> to master a word (+2 pts), evolve your pet &amp; unlock real storybooks!</p>
+          <div class="kid-hero-actions">
+            <button id="kid-open-stories-btn" class="kid-btn kid-story-shelf-btn">
+              📖 My Storybooks (<span id="kid-unlocked-stories-count">1</span>/6)
+            </button>
+            <button id="kid-open-add-word-btn" class="kid-btn kid-add-book-word-btn">
+              ➕ Add Book Word
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 Games Grid -->
       <div class="kid-games-grid">
         <button id="kid-start-g1" class="kid-game-card kid-card-1">
           <div class="kid-game-icon">🔄</div>
-          <h3>Word Twins &amp; Opposites</h3>
+          <h3>Twins &amp; Opposites</h3>
           <p>Pick the Synonym (Same) or Antonym (Opposite)!</p>
           <span class="kid-play-pill">Play Game 1 ▶</span>
         </button>
@@ -347,13 +364,20 @@
           <p>Tap the missing letters to spell the word!</p>
           <span class="kid-play-pill">Play Game 3 ▶</span>
         </button>
+
+        <button id="kid-start-g4" class="kid-game-card kid-card-4">
+          <div class="kid-game-icon">🎧</div>
+          <h3>Listen &amp; Catch</h3>
+          <p>Hear the word spoken and pop the matching bubble!</p>
+          <span class="kid-play-pill">Play Game 4 ▶</span>
+        </button>
       </div>
 
-      <!-- Current Practice Words & 5-Star Progress -->
+      <!-- Active Words & 5-Star + Shield Tracker -->
       <section class="kid-pack-panel">
         <div class="kid-pack-header">
           <h3>Your Active Words (<span id="kid-active-count">0</span>)</h3>
-          <span class="kid-pack-sub">5 green stars = Mastered (+2 pts &amp; new word unlocked!)</span>
+          <span class="kid-pack-sub">🛡️ Shield activates at 3 stars • 5 stars = Mastered (+2 pts!)</span>
         </div>
         <div id="kid-active-words-grid" class="kid-words-chips"></div>
       </section>
@@ -364,7 +388,10 @@
       <div class="kid-stage-top">
         <button id="kid-back-hub-btn" class="kid-btn kid-back-btn">🏠 All Games</button>
         <span id="kid-game-title-pill" class="kid-mode-tag">Game 1</span>
-        <div id="kid-word-stars" class="kid-word-stars" title="Consecutive correct answers">☆☆☆☆☆</div>
+        <div class="kid-star-shield-wrap">
+          <span id="kid-shield-pill" class="kid-shield-pill hidden" title="Shield protects your streak at 3+ stars!">🛡️ Shield Active</span>
+          <div id="kid-word-stars" class="kid-word-stars" title="Consecutive correct answers">☆☆☆☆☆</div>
+        </div>
       </div>
 
       <div class="kid-question-card">
@@ -375,7 +402,7 @@
         </div>
         <p id="kid-clue-text" class="kid-clue-text"></p>
 
-        <!-- Game 1 & 2 Multiple Choice Options -->
+        <!-- Game 1, 2 & 4 Multiple Choice / Bubble Options -->
         <div id="kid-mc-options" class="kid-options-grid"></div>
 
         <!-- Game 3 Missing Letters Builder -->
@@ -395,6 +422,57 @@
         </div>
       </div>
     </section>
+
+    <!-- Kid Storybook Shelf & Reader -->
+    <section id="kid-stories-view" class="kid-stories-view hidden">
+      <div class="kid-stage-top">
+        <button id="kid-stories-back-btn" class="kid-btn kid-back-btn">🏠 Back to Hub</button>
+        <span class="kid-mode-tag">📖 Unlockable Storybooks</span>
+        <span class="kid-pack-sub">Master 5 words per chapter!</span>
+      </div>
+
+      <div id="kid-story-cards-list" class="kid-story-cards-list"></div>
+
+      <!-- Active Story Reader Card -->
+      <div id="kid-story-reader" class="kid-story-reader hidden">
+        <div class="kid-reader-top">
+          <h2 id="kid-reader-title"></h2>
+          <button id="kid-read-full-story-btn" class="kid-btn kid-read-all-btn">🔊 Read Story Aloud</button>
+        </div>
+        <p class="kid-reader-tip">Tap any glowing gold word to hear it and see its meaning!</p>
+        <div id="kid-reader-body" class="kid-reader-body"></div>
+        <div id="kid-reader-word-popup" class="kid-reader-popup hidden"></div>
+      </div>
+    </section>
+
+    <!-- Parent Quick-Add Book Word Modal (Math Gate) -->
+    <div id="kid-add-word-modal" class="modal hidden">
+      <div class="kid-modal-card">
+        <div class="modal-header">
+          <h3>➕ Add a Word from His Book</h3>
+          <button id="kid-close-add-modal" class="kid-btn kid-exit-btn">✕</button>
+        </div>
+
+        <div id="kid-parent-gate">
+          <p class="kid-modal-sub">Parent Check: Solve to unlock word creator</p>
+          <div class="kid-math-row">
+            <strong id="kid-math-prompt">7 + 5 = ?</strong>
+            <input type="number" id="kid-math-answer" placeholder="?" />
+            <button id="kid-math-unlock-btn" class="kid-btn kid-story-shelf-btn">Unlock</button>
+          </div>
+          <p id="kid-math-error" class="error-text"></p>
+        </div>
+
+        <form id="kid-add-word-form" class="kid-add-form hidden">
+          <input type="text" id="kw-word" placeholder="Word from book (e.g. courageous)" required />
+          <input type="text" id="kw-clue" placeholder="Simple kid meaning (e.g. Very brave and not scared)" required />
+          <input type="text" id="kw-synonym" placeholder="Synonym / Same word (e.g. brave)" required />
+          <input type="text" id="kw-antonym" placeholder="Antonym / Opposite word (e.g. fearful)" required />
+          <input type="text" id="kw-sentence" placeholder="Story sentence with [word] in brackets" required />
+          <button type="submit" class="kid-btn kid-story-shelf-btn">Save into Active Words ✨</button>
+        </form>
+      </div>
+    </div>
   </div>
 
   <!-- Import JSON Modal -->
