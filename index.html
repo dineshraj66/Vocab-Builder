@@ -4,20 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Daily Vocab Trainer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#090d16" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3330/3330314.png" />
 </head>
 <body>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
   <!-- Auth Overlay -->
   <div id="auth-screen" class="auth-screen">
-    <div class="auth-card">
+    <div class="auth-card glass-panel">
+      <div class="logo-pill">365-DAY EDITION</div>
       <h1>Daily Vocab Trainer</h1>
-      <p>365-Day Newspaper Sentence & Spaced Repetition System</p>
-      <button id="google-signin-btn" class="btn btn-primary">Sign in with Google</button>
+      <p>Master newspaper vocabulary through context recall, spaced repetition, and arcade drills.</p>
+      <button id="google-signin-btn" class="btn btn-primary btn-glow btn-large">Continue with Google</button>
       <p id="auth-error" class="error-text"></p>
     </div>
   </div>
@@ -26,51 +33,102 @@
   <div id="app-container" class="app-container hidden">
     <header class="topbar">
       <div class="brand">
-        <h2>Vocab Trainer</h2>
-        <span id="user-email" class="badge"></span>
+        <div class="brand-mark">V</div>
+        <div>
+          <h2>Vocab Trainer</h2>
+          <span id="user-email" class="user-sub"></span>
+        </div>
       </div>
       <div class="top-actions">
-        <button id="open-calendar-btn" class="btn btn-secondary calendar-trigger" title="Practice Calendar & Streak">
-          📅 <span id="header-streak">0</span>
+        <button id="open-calendar-btn" class="btn btn-glass calendar-trigger" title="Practice Calendar & Streak">
+          <span class="flame-icon">🔥</span> <span id="header-streak">0</span>
         </button>
-        <button id="open-import-btn" class="btn btn-primary">+ Import JSON</button>
-        <button id="export-backup-btn" class="btn btn-secondary">Backup</button>
+        <button id="open-import-btn" class="btn btn-primary btn-glow">+ Import JSON</button>
+        <button id="export-backup-btn" class="btn btn-glass">Backup</button>
         <button id="signout-btn" class="btn btn-ghost">Sign Out</button>
       </div>
     </header>
 
     <!-- Stats Bar -->
     <section class="stats-grid">
-      <div class="stat-card">
+      <div class="stat-card glass-panel">
         <span class="stat-label">Due Today</span>
         <strong id="stat-due" class="stat-value accent">0</strong>
       </div>
-      <div class="stat-card">
+      <div class="stat-card glass-panel">
         <span class="stat-label">Total Words</span>
         <strong id="stat-total" class="stat-value">0</strong>
       </div>
-      <div class="stat-card">
+      <div class="stat-card glass-panel">
         <span class="stat-label">Mastered (Box 4+)</span>
         <strong id="stat-mastered" class="stat-value success">0</strong>
       </div>
-      <div class="stat-card">
+      <div class="stat-card glass-panel">
         <span class="stat-label">Current Streak</span>
         <strong id="stat-streak" class="stat-value warning">0d</strong>
       </div>
     </section>
 
+    <!-- Vocabulary Targets (10 words/day baseline) -->
+    <section class="targets-panel glass-panel">
+      <div class="target-item">
+        <div class="target-head">
+          <span class="stat-label">Today</span>
+          <strong id="goal-daily-text" class="goal-num">0 / 10</strong>
+        </div>
+        <div class="target-bar-track">
+          <div id="goal-daily-bar" class="target-bar-fill"></div>
+        </div>
+      </div>
+
+      <div class="target-item">
+        <div class="target-head">
+          <span class="stat-label">This Week</span>
+          <strong id="goal-weekly-text" class="goal-num">0 / 70</strong>
+        </div>
+        <div class="target-bar-track">
+          <div id="goal-weekly-bar" class="target-bar-fill"></div>
+        </div>
+      </div>
+
+      <div class="target-item">
+        <div class="target-head">
+          <span class="stat-label">This Month</span>
+          <strong id="goal-monthly-text" class="goal-num">0 / 300</strong>
+        </div>
+        <div class="target-bar-track">
+          <div id="goal-monthly-bar" class="target-bar-fill"></div>
+        </div>
+      </div>
+
+      <div class="target-item">
+        <div class="target-head">
+          <span class="stat-label">This Year</span>
+          <strong id="goal-yearly-text" class="goal-num">0 / 3650</strong>
+        </div>
+        <div class="target-bar-track">
+          <div id="goal-yearly-bar" class="target-bar-fill"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Navigation Tabs -->
-    <nav class="tabs">
+    <nav class="tabs glass-panel">
       <button class="tab-btn active" data-tab="study-tab">Study Queue</button>
+      <button class="tab-btn" data-tab="arcade-tab">Arcade</button>
       <button class="tab-btn" data-tab="bank-tab">Word Bank</button>
     </nav>
 
     <!-- Tab 1: Study Queue -->
     <main id="study-tab" class="tab-content active">
-      <div id="empty-queue" class="empty-state hidden">
-        <h3>All caught up for today!</h3>
-        <p>You have reviewed every card due today. Import tomorrow's sentences or browse your Word Bank.</p>
-        <button id="practice-all-btn" class="btn btn-secondary">Practice Ahead (Extra Review)</button>
+      <div id="empty-queue" class="empty-state glass-panel hidden">
+        <div class="empty-badge">ALL CLEAR</div>
+        <h3>You're caught up for today!</h3>
+        <p>Every due card is reviewed. Jump into the Arcade to sharpen your reflexes or browse your Word Bank.</p>
+        <div class="controls-row">
+          <button id="practice-all-btn" class="btn btn-glass">Practice Ahead</button>
+          <button id="jump-arcade-btn" class="btn btn-primary btn-glow">Play Arcade</button>
+        </div>
       </div>
 
       <div id="flashcard-wrapper" class="flashcard-wrapper hidden">
@@ -80,11 +138,11 @@
           <span id="card-progress" class="meta-tag">1 / 10</span>
         </div>
 
-        <div class="flashcard">
+        <div class="flashcard glass-panel">
           <div id="card-sentence" class="sentence-display"></div>
 
           <div id="hint-section" class="hint-section hidden">
-            <strong>Hint:</strong> <span id="card-hint-text"></span>
+            <strong>Meaning Clue:</strong> <span id="card-hint-text"></span>
           </div>
 
           <div id="answer-section" class="answer-section hidden">
@@ -98,8 +156,8 @@
 
         <!-- Controls Before Reveal -->
         <div id="pre-reveal-controls" class="controls-row">
-          <button id="show-hint-btn" class="btn btn-secondary">Show Hint</button>
-          <button id="reveal-btn" class="btn btn-primary btn-large">Show Answer</button>
+          <button id="show-hint-btn" class="btn btn-glass">Show Hint</button>
+          <button id="reveal-btn" class="btn btn-primary btn-glow btn-large">Show Answer</button>
         </div>
 
         <!-- Spaced Repetition Rating Controls -->
@@ -124,7 +182,93 @@
       </div>
     </main>
 
-    <!-- Tab 2: Word Bank -->
+    <!-- Tab 2: Arcade -->
+    <section id="arcade-tab" class="tab-content hidden">
+      <!-- Arcade Launcher -->
+      <div id="arcade-menu">
+        <div class="arcade-toolbar glass-panel">
+          <div>
+            <h4>Deck Focus</h4>
+            <p class="muted-small">Choose which words appear in the games</p>
+          </div>
+          <label class="toggle-pill">
+            <input type="checkbox" id="weak-words-toggle" />
+            <span>Weak Words Only (Box 1–2)</span>
+          </label>
+        </div>
+
+        <div class="game-cards-grid">
+          <div class="game-card glass-panel">
+            <div class="game-card-top">
+              <span class="game-badge quiz-badge">CONTEXT REFLEX</span>
+              <span class="best-pill">High Score: <strong id="quiz-best-score">0</strong></span>
+            </div>
+            <h3>Headline Fill-in-the-Blank</h3>
+            <p>10 rapid-fire newspaper sentences. Pick the missing word before the 15s timer runs out to build a 5x combo.</p>
+            <button id="start-quiz-btn" class="btn btn-primary btn-glow">Start Headline Quiz</button>
+          </div>
+
+          <div class="game-card glass-panel">
+            <div class="game-card-top">
+              <span class="game-badge match-badge">SPEED GRID</span>
+              <span class="best-pill">Best Time: <strong id="match-best-time">--</strong></span>
+            </div>
+            <h3>Word ↔ Meaning Match</h3>
+            <p>Clear 6 word-and-definition pairs against the clock. Every mismatch adds a +2.0s time penalty.</p>
+            <button id="start-match-btn" class="btn btn-primary btn-glow">Start Speed Match</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game 1: Headline Quiz Arena -->
+      <div id="quiz-arena" class="glass-panel arena-box hidden">
+        <div class="arena-header">
+          <button class="btn btn-ghost btn-sm exit-arcade-btn">← Back</button>
+          <div class="arena-pills">
+            <span class="meta-tag">Q <strong id="quiz-q-num">1</strong>/10</span>
+            <span class="meta-tag combo-tag">Combo <strong id="quiz-combo">1x</strong></span>
+            <span class="meta-tag score-tag">Score <strong id="quiz-score">0</strong></span>
+          </div>
+        </div>
+
+        <div class="timer-track">
+          <div id="quiz-timer-bar" class="timer-fill"></div>
+        </div>
+
+        <div id="quiz-sentence" class="quiz-sentence"></div>
+        <div id="quiz-options" class="quiz-options-grid"></div>
+      </div>
+
+      <!-- Game 2: Speed Match Arena -->
+      <div id="match-arena" class="glass-panel arena-box hidden">
+        <div class="arena-header">
+          <button class="btn btn-ghost btn-sm exit-arcade-btn">← Back</button>
+          <div class="arena-pills">
+            <span class="meta-tag">Matched <strong id="match-count">0</strong>/6</span>
+            <span class="meta-tag timer-tag">⏱ <strong id="match-timer">0.0s</strong></span>
+          </div>
+        </div>
+
+        <p class="arena-sub">Tap a word, then tap its matching definition.</p>
+        <div class="match-columns">
+          <div id="match-words-col" class="match-col"></div>
+          <div id="match-meanings-col" class="match-col"></div>
+        </div>
+      </div>
+
+      <!-- Arcade Summary Card -->
+      <div id="arcade-result" class="empty-state glass-panel hidden">
+        <div class="empty-badge" id="result-badge">ROUND COMPLETE</div>
+        <h3 id="result-title">Great Run!</h3>
+        <p id="result-summary"></p>
+        <div class="controls-row">
+          <button id="play-again-btn" class="btn btn-primary btn-glow">Play Again</button>
+          <button class="btn btn-glass exit-arcade-btn">All Games</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 3: Word Bank -->
     <section id="bank-tab" class="tab-content hidden">
       <div class="bank-controls">
         <input type="text" id="search-input" placeholder="Search word, sentence, or meaning..." />
@@ -143,16 +287,16 @@
 
   <!-- Import JSON Modal -->
   <div id="import-modal" class="modal hidden">
-    <div class="modal-content">
+    <div class="modal-content glass-panel">
       <div class="modal-header">
         <h3>Import Daily Sentences (JSON)</h3>
         <button id="close-import-btn" class="btn-icon">✕</button>
       </div>
-      <p class="modal-subtitle">Paste the JSON array generated from your daily notebook photo.</p>
-      <textarea id="json-input" rows="10" placeholder='[{"word": "example", "meaning": "...", "sentence": "This is an [example].", "source": "Chennai Times", "dateAdded": "2026-11-13"}]'></textarea>
+      <p class="modal-subtitle">Paste the JSON array generated from your daily newspaper photo.</p>
+      <textarea id="json-input" rows="10" placeholder='[{"word": "example", "meaning": "...", "sentence": "This is an [example].", "source": "Chennai Times", "dateAdded": "2026-11-16"}]'></textarea>
       <div class="modal-footer">
-        <button id="load-starter-btn" class="btn btn-secondary">Load Nov 12 & 13 Starter Pack</button>
-        <button id="save-json-btn" class="btn btn-primary">Save to Database</button>
+        <button id="load-starter-btn" class="btn btn-glass">Load Nov 12 & 13 Starter Pack</button>
+        <button id="save-json-btn" class="btn btn-primary btn-glow">Save to Database</button>
       </div>
       <p id="import-status" class="status-text"></p>
     </div>
@@ -160,7 +304,7 @@
 
   <!-- Calendar & Streak Modal -->
   <div id="calendar-modal" class="modal hidden">
-    <div class="modal-content">
+    <div class="modal-content glass-panel">
       <div class="modal-header">
         <h3>Practice Calendar & Streak</h3>
         <button id="close-calendar-btn" class="btn-icon">✕</button>
@@ -182,9 +326,9 @@
       </div>
 
       <div class="calendar-nav">
-        <button id="prev-month-btn" class="btn btn-secondary">◀</button>
+        <button id="prev-month-btn" class="btn btn-glass">◀</button>
         <h4 id="calendar-month-label">November 2026</h4>
-        <button id="next-month-btn" class="btn btn-secondary">▶</button>
+        <button id="next-month-btn" class="btn btn-glass">▶</button>
       </div>
 
       <div class="calendar-weekdays">
